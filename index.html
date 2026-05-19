@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh" class="js">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>流量消耗器</title>
+    <meta name="keywords" content="IP查询,IP归属查询,在线测速,网速测试,多地IP查询,流量消耗器">
+    <meta name="description" content="测试您的网速，多地查询您的IP地址，同时具备网络延迟实时检测">
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <link rel="stylesheet" href="res/dashlite.css">
+    <link rel="stylesheet" href="res/style.css">
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="res/layer.css" id="layuicss-layer">
+    <script src="https://fastly.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        .stat {
+            width: 100%;
+            column-gap: 1rem;
+            padding: 1rem 1.5rem;
+        }
+        .stat-title {
+            white-space: nowrap;
+            opacity: .6;
+        }
+        .stat-value {
+            white-space: nowrap;
+            grid-column-start: 1;
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 2.5rem
+        }
+        .nk-menu-item a {
+            text-decoration: none;
+        }
+         /* 自定义链接输入框默认隐藏，仅在选择“自定义”时显示 */
+        #link {
+            display: none;
+        }
+        /* 显示时的过渡效果 (可选) */
+        #link.visible {
+            display: block;
+        }
+        /* 确保选择框和输入框在同一布局下美观 */
+        .form-control-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .form-control-wrap select,
+        .form-control-wrap input {
+            width: 100%;
+        }
+        @media (min-width: 576px) {
+            .form-control-wrap {
+                flex-direction: row;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+            .form-control-wrap select {
+                flex: 2;
+            }
+            .form-control-wrap input {
+                flex: 3;
+            }
+        }
+        /* 底部备案号样式 */
+        .footer-icp {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            font-size: 0.8rem;
+            color: #8a8d93;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            margin-top: 1rem;
+            background-color: rgba(245, 247, 250, 0.5);
+        }
+        .footer-icp a {
+            color: #526484;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-icp a:hover {
+            color: #f98c45;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="nk-body npc-invest bg-lighter no-touch nk-nio-theme" style="cursor:pointer">
+    <div class="nk-wrap ">
+        <div class="nk-header nk-header-fluid nk-header-fixed is-light">
+            <div class="container-xl">
+                <div class="nk-header-wrap link-between">
+                    <div class="nk-menu-trigger mr-sm-2 d-lg-none">
+                        <a href="#" class="nk-nav-toggle nk-quick-nav-icon" data-target="headerNav"><em class="icon ni ni-menu"></em></a>
+                    </div>
+                    <div class="nk-header-brand">
+                        <a href="#" class="logo-link text-base"><img src="images/logo.png" class="hide-mb-sm">流量消耗器</a>
+                    </div>
+                    <div class="nk-header-tools nk-header-menu" data-content="headerNav">
+                        <div class="nk-header-mobile">
+                            <div class="nk-header-brand">
+                                <a href="#" class="logo-link text-base">
+                                    <span class="nio-version" style="font-size: 21px;position: inherit;">流量消耗器</span>
+                                </a>
+                            </div>
+                            <div class="nk-menu-trigger mr-n2">
+                                <a href="#" class="nk-nav-toggle nk-quick-nav-icon" data-target="headerNav"><em class="icon ni ni-arrow-left"></em></a>
+                            </div>
+                        </div>
+                        <ul class="nk-menu nk-menu-main">
+                            <li class="nk-menu-item">
+                                <a href="https://blog.5zqq.cn" class="nk-menu-link nk-ibx-action-item">
+                                    <em class="icon ni ni-book-read"></em>
+                                    <span class="nk-menu-text">博客</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="no-gutters">
+                        <ul class="nk-quick-nav">
+                            <li class="dropdown">
+                                <a href="javascript:;" class="progress-rating dark-switch ">
+                                    <span class="nk-menu-icon">
+                                        <em class="icon ni ni-moon"></em>
+                                        <em class="icon ni ni-sun d-none"></em>
+                                    </span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="nk-content nk-content-lg nk-content-fluid">
+            <div id="app" class="container-xl">
+                <div class="col-sm-12 col-md-10 col-xl-8 center-block">
+                    <div class="card card-preview">
+                        <div class="card-inner">
+                            <div class="nya-title nk-ibx-action-item progress-rating"><em class="icon ni ni-info"></em><span class="nk-menu-text font-weight-bold">工具说明</span></div>
+                            <div class="accordion-inner">
+                                <div class="title"><span class="dot dot-lg sq" data-bg="#9cabff" style="background: rgb(156, 171, 255);"></span>&nbsp;<span>虽支持可自定义地址，但无法请求跨域链接</span></div>
+                                <div class="title"><span class="dot dot-lg sq" data-bg="#ffa9ce" style="background: rgb(255, 169, 206);"></span>&nbsp;<span>速度不满意？请尝试手动切换节点，加大运行线程</span></div>
+                                <div class="title"><span class="dot dot-lg sq" data-bg="#f98c45" style="background: rgb(249, 140, 69);"></span>&nbsp;<span>更多好玩精彩内容？<a  target="_blank" href="https://blog.5zqq.cn/">点我查看</a></span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card card-preview">
+                        <div class="card-inner mt-3">
+                            <div class="nya-title nk-ibx-action-item progress-rating"><em class="icon ni ni-setting"></em><span class="nk-menu-text font-weight-bold">测试设置</span></div>
+                            <div class="form-group"><label class="form-label">测试地址</label>
+                                <div class="form-control-wrap">
+                                    <select id='select' onchange="handleSelectChange(this);" type="text" class="form-control">
+                                <option value="" id="diy">自定义</option>
+                                <optgroup label="通用节点">
+                                    <option selected="selected" value="https://img.alicdn.com/imgextra/i1/O1CN01xA4P9S1JsW2WEg0e1_!!6000000001084-2-tps-2880-560.png">通用-高速1</option>
+                                    <option value="https://img.alicdn.com/imgextra/i1/O1CN01xA4P9S1JsW2WEg0e1_!!6000000001084-2-tps-2880-560.png">通用高速-2</option>
+                                    <option value="https://p1.dailygn.com/obj/g-marketing-act-assets/2024_11_28_14_54_37/mv_1128_1080px.mp4">通用-高速3</option>
+                                </optgroup>
+                                <optgroup label="移动系">
+                                    <option value="https://gcache.migu.cn/prod/upload/game_resource/channel_for_homepage_game2/202408/2909/59/20240829095855985_mgwebp1.jpg">移动节点-咪咕快游</option>
+                                    <option value="https://cp.139.com/video/banner.mp4">移动节点-云手机</option>
+                                    <option value="https://yun.mcloud.139.com/hongseyunpan/2.43G.zip">移动节点-云盘</option>
+                                    <option value="https://yun.mcloud.139.com/mCloudPc/v832/mCloud_Setup-001.exe">移动节点-云盘定向</option>
+                                    <option value="https://img.mcloud.139.com/material_prod/material_media/20221128/1669626861087.png">移动节点-和彩高速</option>
+                                    <option value="https://wsdkdl.migu.cn/common/mgmusic/migu_https.js">移动节点-咪咕音乐</option>
+                                    <option value="https://img.aikan.miguvideo.com/publish/noms/2024/04/22/1O5MNLF3AN2JL.gif">移动节点-爱看定向</option>
+                                </optgroup>
+                                <optgroup label="天翼系">
+                                    <option value="https://static.e.189.cn/open/login/page/web/v5.0/static/js/captch.min.js?v1.1">天翼节点-云盘</option>
+                                    <option value="https://desk.ctyun.cn:8999/desktop-prod/software/windows_tob_client/15/64/202030001/CtyunClouddeskUniversal_2.3.0_202030001_x86_20240327104015_Setup.exe">天翼节点-桌面</option>
+                                </optgroup>
+                                <optgroup label="其他系列">
+                                    <option value="https://ossweb-img.qq.com/images/lol/web201310/skin/big10001.jpg">TX-1</option>
+                                    <option value="https://ossweb-img.qq.com/upload/webplat/info/cf/20230717/653421385804853.png">TX-2</option>
+                                    <option value="https://puui.qpic.cn/vpic_cover/g3346tki83w/g3346tki83w_hz.jpg">TX视频</option>
+                                    <option value="https://issuepcdn.baidupcs.com/issue/netdisk/yunguanjia/BaiduNetdisk_7.54.0.103.exe">BD网盘1</option>
+                                    <option value="https://nd-static.bdstatic.com/m-static/wp-brand/img/banner.5783471b.png">BD网盘2</option>
+                                    <option value="https://static-d.iqiyi.com/ext/common/iQIYIMedia_000.dmg">QY</option>
+                                    <option value="https://jmy-pic.baidu.com/0/pic/1203225490_216151106_2084668354.jpg">YK</option>
+                                    <option value="https://alimov2.a.kwimgs.com/upic/2024/11/18/17/BMjAyNDExMTgxNzM0NTFfMjQ2MzY1ODI4MV8xNDg5NTc1NTQwNDBfMl8z_b_Ba0e085802ad867415b13e560bab69dd2.mp4">KS</option>
+                                    <option value="https://wwwstatic.vivo.com.cn/vivoportal/files/resource/funtouch/1651200648928/images/os2-jude-video.mp4">vvoo</option>
+                                </optgroup>
+                                <optgroup label="全球高速">
+                                    <option value="https://cachefly.cachefly.net/100mb.test">Cachefly Test [Global]</option>
+                                    <option value="https://ash.download.datapacket.com/100mb.bin">Datapacker]</option>
+                                    <option value="https://js-cdn.music.apple.com/musickit/v2/amp/musickit.js">Apple-Speed]</option>
+                                    <option value="https://speed.cloudflare.com/__down?bytes=1073741824">Cloudflare Speed [Global]</option>
+                                    <option value="https://abs.twimg.com/responsive-web/client-web/main.ef558a8a.js">Cloudflare Speed [Global]</option>
+                                </optgroup>
+                                    </select>
+                                    <input value="" oninput="handleCustomInput(this)" type="text" id="link" placeholder="请输入下载链接" autocomplete="off" class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-group"><label class="form-label">线程</label>
+                                <div class="form-control-wrap number-spinner-wrap"><button onclick="var thread=document.getElementById('thread');if(thread.value!=thread.min)thread.value--;" class="btn btn-icon btn-outline-primary number-spinner-btn number-minus"><em class="icon ni ni-minus"></em></button> <input onchange="var self= document.getElementById('thread');if(self.value<self.min)self.value=self.min;if(self.value>self.max)self.value=self.max" id='thread' type="number" min="1" max="32" value=1 class="form-control number-spinner"> <button onclick="var thread=document.getElementById('thread');if(thread.value!=thread.max)thread.value++;" class="btn btn-icon btn-outline-primary number-spinner-btn number-plus"><em class="icon ni ni-plus"></em></button></div>
+                            </div>
+                            <div class="form-group" id="back">
+                                <div class="preview-block">
+                                    <div class="custom-control custom-switch checked"><input onclick="musiccontrol(this)" type="checkbox" id="customSwitch2" class="custom-control-input"> <label for="customSwitch2" class="custom-control-label">保持后台运行</label></div>
+                                </div>
+                            </div>
+                            <button onclick="botton_clicked();" type="button" id="do" class="btn btn-dim btn-outline-secondary btn-block card-link">开始</button>
+                            <div class="row mt-4">
+                                <div class="col-sm-12 col-md-4 border stat" onclick='inputMax=prompt("请输入流量上限(GB)\n不填为不设置上限","");if(inputMax !== null)setMax(inputMax)'>
+                                    <div class="text-dark"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-15 w-15 float-right pt-3"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg></div>
+                                    <div class="stat-title">总流量 <a id="showMax"></a></div>
+                                    <div class="stat-value" id="total">-</div>
+                                </div>
+                                <div class="col-sm-12 col-md-4 border stat">
+                                    <div class="text-info"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-15 w-15 float-right pt-3"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16.469,8.924l-2.414,2.413c-0.156,0.156-0.408,0.156-0.564,0c-0.156-0.155-0.156-0.408,0-0.563l2.414-2.414c1.175-1.175,1.175-3.087,0-4.262c-0.57-0.569-1.326-0.883-2.132-0.883s-1.562,0.313-2.132,0.883L9.227,6.511c-1.175,1.175-1.175,3.087,0,4.263c0.288,0.288,0.624,0.511,0.997,0.662c0.204,0.083,0.303,0.315,0.22,0.52c-0.171,0.422-0.643,0.17-0.52,0.22c-0.473-0.191-0.898-0.474-1.262-0.838c-1.487-1.485-1.487-3.904,0-5.391l2.414-2.413c0.72-0.72,1.678-1.117,2.696-1.117s1.976,0.396,2.696,1.117C17.955,5.02,17.955,7.438,16.469,8.924 M10.076,7.825c-0.205-0.083-0.437,0.016-0.52,0.22c-0.083,0.205,0.016,0.437,0.22,0.52c0.374,0.151,0.709,0.374,0.997,0.662c1.176,1.176,1.176,3.088,0,4.263l-2.414,2.413c-0.569,0.569-1.326,0.883-2.131,0.883s-1.562-0.313-2.132-0.883c-1.175-1.175-1.175-3.087,0-4.262L6.51,9.227c0.156-0.155,0.156-0.408,0-0.564c-0.156-0.156-0.408-0.156-0.564,0l-2.414,2.414c-1.487,1.485-1.487,3.904,0,5.391c0.72,0.72,1.678,1.116,2.696,1.116s1.976-0.396,2.696-1.116l2.414-2.413c1.487-1.486,1.487-3.905,0-5.392C10.974,8.298,10.55,8.017,10.076,7.825"></path></svg></div>
+                                    <div class="stat-title" id="describe">实时速度</div>
+                                    <div class="stat-value text-info" id="speed">-</div>
+                                </div>
+                                <div class="col-sm-12 col-md-4 border stat">
+                                    <div class="text-dark"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-15 w-15 float-right pt-3"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
+                                    <div class="stat-title">带宽</div>
+                                    <div class="stat-value" id="mbps">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card card-preview">
+                        <div class="card-inner">
+                            <div class="nya-title nk-ibx-action-item progress-rating"><em class="icon ni ni-location"></em><span class="nk-menu-text font-weight-bold">IP信息</span></div>
+                            <div class="accordion-inner">
+                                <li class="nk-menu-item">
+                                    <a class="text-waring" style="pointer-events:none;">IPv4 地址</a>
+                                    <a class="text-waring" style="pointer-events:none;float: right;" id="ipcn_v4">Loading...</a>
+                                </li>
+
+                                 <li class="nk-menu-item ">
+                                    <a class="text-waring" style="pointer-events:none;" id="ipcn">百度连通性</a>
+                                    <a class="text-waring" style="pointer-events:none;float: right;" id="laycn">-ms</a>
+                                </li>
+                                <li class="nk-menu-item">
+                                    <a style="pointer-events:none;">Cloudflare连通性</a>
+                                    <a style="pointer-events:none;float: right;" id="laygb">-ms</a>
+                                </li>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 底部备案号信息行（可填写备案号、联系方式等） -->
+        <div class="footer-icp">
+            <p>© 本工具仅用于网络测试与流量消耗，请合理使用</p>
+        </div>
+    <script>
+        // ---------- ✨ 核心功能：控制自定义链接输入框的显隐 ✨ ----------
+        // 获取元素
+        const selectEl = document.getElementById('select');
+        const linkInput = document.getElementById('link');
+        const diyOption = document.getElementById('diy');  // 自定义option用于存储自定义值
+
+        /**
+         * 切换链接输入框的显示/隐藏
+         * 规则：仅当选中 "自定义" 项（value 为空字符串）时显示输入框，否则隐藏
+         * 同时，显示时自动填充已保存的自定义地址，隐藏时同步选中的URL到输入框（保证后续逻辑）
+         */
+        function toggleCustomLinkInput() {
+            if (!selectEl || !linkInput) return;
+            const isCustom = (selectEl.value === '');  // 自定义选项 value 为空字符串
+            
+            if (isCustom) {
+                // 显示输入框，并填入保存的自定义地址（diy option 的 value）
+                linkInput.style.display = 'block';
+                linkInput.classList.add('visible');
+                const customUrl = diyOption ? diyOption.value : '';
+                if (linkInput.value !== customUrl) {
+                    linkInput.value = customUrl;
+                }
+                // 确保自定义模式下，手动输入时切换到自定义选项的逻辑早已存在，无需额外操作
+            } else {
+                // 隐藏输入框，并且将当前选中选项的url同步到 linkInput.value (保持原有测试逻辑)
+                linkInput.style.display = 'none';
+                linkInput.classList.remove('visible');
+                const selectedUrl = selectEl.options[selectEl.selectedIndex]?.value || '';
+                if (linkInput.value !== selectedUrl) {
+                    linkInput.value = selectedUrl;
+                }
+            }
+        }
+
+        /**
+         * 处理 select 变化：既要保留原有的值同步 + cookie存储，也要控制显隐
+         * 原 onchange 逻辑扩展
+         */
+        function handleSelectChange(selectDom) {
+            // 1. 原有逻辑: 更新输入框值为当前选中项
+            const selectedUrl = selectDom.options[selectDom.selectedIndex].value;
+            document.getElementById('link').value = selectedUrl;
+            // 2. 保存 cookie 选中的索引
+            setCookie('select', selectDom.selectedIndex, 365);
+            // 3. 控制显示隐藏 (自定义时显示输入框)
+            toggleCustomLinkInput();
+        }
+
+        /**
+         * 处理自定义输入框的手动输入
+         * 当用户在输入框中编辑时，自动切换到“自定义”模式，存储自定义链接，并保存 cookie
+         * 原本 oninput 逻辑扩展，同时保证显示状态
+         */
+        function handleCustomInput(inputDom) {
+            // 强制将选中索引改为自定义 (索引0)
+            if (selectEl.selectedIndex !== 0) {
+                selectEl.selectedIndex = 0;
+                // 同步更新select样式、保存cookie的索引
+                setCookie('select', 0, 365);
+            }
+            // 将用户输入的地址保存到 diy option 的 value 中，并保存 cookie
+            const customVal = inputDom.value;
+            if (diyOption) diyOption.value = customVal;
+            setCookie('diy', customVal, 365);
+            // 确保输入框可见并且值同步（但本身就是可见状态，以防万一）
+            if (linkInput.style.display !== 'block') {
+                linkInput.style.display = 'block';
+                linkInput.classList.add('visible');
+            }
+            // 注意：不要递归触发 toggle，但状态已经正确。
+        }
+
+        // 覆盖或增强原有的 setCookie / getCookie (保留原有实现，保证兼容)
+        // 下面的 setCookie, getCookie 与原版定义一致，只是确保不冲突（原版已存在相同函数，但重写无妨）
+        // 不过原脚本后面还有定义，为了避免重复，先检查是否存在，不存在再定义。但为了保险，此处使用已经存在的函数，不需要重新定义。
+        // 由于原始代码后面script有setCookie/getCookie定义，目前只保证不覆盖，因为我们调用 setCookie 是全局可见的。
+        // 为了确保初始化时能正确加载，需要等待 DOM 完全解析后再进行初始化操作。
+        
+        // 保存原始函数的引用（防止覆盖，但无需操心，只要在现有基础上执行初始化即可）
+        // 修复初始化逻辑: 根据cookie恢复选择后，同步显隐状态，并修复自定义模式下的link值
+        function initializeLinkVisibility() {
+            if (!selectEl || !linkInput) return;
+            // 恢复自定义地址 (diy option 的值)
+            const savedDiy = getCookie('diy');
+            if (savedDiy && diyOption) {
+                diyOption.value = savedDiy;
+            }
+            // 恢复选择的索引
+            const savedSelectIndex = getCookie('select');
+            if (savedSelectIndex !== "" && !isNaN(parseInt(savedSelectIndex))) {
+                const idx = parseInt(savedSelectIndex);
+                if (idx >= 0 && idx < selectEl.options.length) {
+                    selectEl.selectedIndex = idx;
+                } else {
+                    selectEl.selectedIndex = 0;
+                }
+            } else {
+                // 默认百度CDN被选中，但需保持预设的selected属性，但我们确保索引正确：默认百度CDN对应索引1（因为有自定义打头）
+                if (selectEl.selectedIndex === -1) selectEl.selectedIndex = 1;
+            }
+            
+            // 核心: 如果当前选项是自定义，需要把 link 的值设置为 diyOption 保存的地址；
+            // 如果不是自定义，需要同步选中链接的值到输入框，并隐藏
+            const isCustomNow = (selectEl.value === '');
+            if (isCustomNow) {
+                // 显示输入框，并把自定义历史值填入
+                linkInput.style.display = 'block';
+                linkInput.classList.add('visible');
+                const customUrl = diyOption ? diyOption.value : '';
+                linkInput.value = customUrl;
+            } else {
+                // 非自定义，隐藏输入框，并同步选中链接值
+                linkInput.style.display = 'none';
+                linkInput.classList.remove('visible');
+                const selectedUrl = selectEl.options[selectEl.selectedIndex]?.value || '';
+                linkInput.value = selectedUrl;
+            }
+        }
+        
+        // 为了保证原有页面加载完毕后原有初始化逻辑（getCookie设置select等）完成，我们需要等待 a moment
+        // 原有代码在下面 script 标签中也有初始化（设置在全局的 document.getElementById('diy').value = getCookie("diy"); 等）
+        // 为避免冲突，我们等待页面完全加载后执行修正，并保证自定义显隐优先。
+        // 另外原生的 onload 可能会被覆盖，使用 DOMContentLoaded 确保顺序。
+        window.addEventListener('DOMContentLoaded', function() {
+            // 延迟一点点，保证原有的 cookie 恢复已经作用于 dom（原有脚本顺序在下面执行时）
+            // 但是因为我们的 script 标签位于页面较前位置，后面还有初始化脚本（原来的脚本段在下方以及 main.js等）
+            // 为了让最终效果正确，使用 setTimeout 略微推迟，待所有原生初始化代码完成后再次修正显隐逻辑。
+            setTimeout(() => {
+                initializeLinkVisibility();
+                // 额外监听 select 变更（确保任何通过代码触发的变化都能更新显隐）但是原有 select 的 onchange 已包含 handleSelectChange
+                // 如果未来有其他 JS 修改 selectedIndex 没有触发 change，可以加 MutationObserver，但现有功能足够。
+                // 同时监听线程调整等其他不变，无影响。
+            }, 50);
+        });
+        
+        // 保留原始 musiccontrol 等原有函数，避免缺失定义，下面会沿用原有。
+        // 为了确保原有函数仍然可用，且不破坏任何逻辑，我们把原脚本的剩余函数（show, musiccontrol等）保留原样。
+        // 但为了不重复导致覆盖，注意原页面底部有大量 script，它们会正常加载。
+        // 在这里添加额外必要的辅助函数（如果原来没有定义 show/setCookie 则会重复，但原有存在，故不再重复覆盖）。
+        // 由于底部的 setCookie/getCookie 依然存在，安全起见，我们不再重写。直接调用自身已经定义的即可。
+        
+        // 但是为了某些情况下可能丢失 setCookie 的引用，但绝大部分已存在，没问题。
+        // 我们应确保所有的原有函数全局可用，并且不对原有功能产生副作用。
+        
+        // 为应付可能的额外场景，手动暴露保证 cookie 函数存在 (以防执行顺序问题)
+        if (typeof setCookie !== 'function') {
+            window.setCookie = function(cname, cvalue, exdays) {
+                var d = new Date();
+                d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+                var expires = "expires=" + d.toGMTString();
+                document.cookie = cname + "=" + cvalue + "; " + expires;
+            };
+        }
+        if (typeof getCookie !== 'function') {
+            window.getCookie = function(cname) {
+                var name = cname + "=";
+                var ca = document.cookie.split(';');
+                for (var i = 0; i < ca.length; i++) {
+                    var c = ca[i].trim();
+                    if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+                }
+                return "";
+            };
+        }
+        
+        // 注意: 原有的 show, musiccontrol, botton_clicked 等函数均在 main.js?5 或其他外部脚本中定义，我们保留即可。
+        // 为了适应主题切换等，全局环境维持不变。
+        // 另外需要保留原有的 lastTouchEnd 逻辑，原先已存在，保留。
+    </script>
+    <!-- 原有的剩余脚本（保留完全一致的功能，同时确保自定义显隐增强生效） -->
+    <script>
+        var lastTouchEnd = 0
+        if (!!('ontouchstart' in window || navigator.maxTouchPoints)) {
+            document.documentElement.addEventListener(
+                'touchend',
+                function (event) {
+                    var now = Date.now()
+                    if (now - lastTouchEnd <= 300) {
+                        event.preventDefault()
+                    }
+                    lastTouchEnd = now
+                }, {
+                passive: false
+            }
+            )
+        }
+
+        function show(num, des, flo) {
+            var cnum = num;
+            var total_index = 0;
+            while (cnum >= 1024) {
+                if (total_index == des.length - 1) break;
+                cnum = cnum / 1024;
+                total_index++;
+            }
+            return cnum.toFixed(flo[total_index]) + des[total_index];
+        }
+
+        function musiccontrol(botton) {
+            if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
+                if (document.getElementById("customSwitch2").checked) document.getElementById("music").play()
+                else document.getElementById("music").pause()
+            }
+        }
+        document.getElementById("music").addEventListener("pause", function () {
+            document.title = '流量消耗器'
+            if (run && !visibl) botton_clicked()
+            document.getElementById("customSwitch2").checked = false
+        })
+        document.getElementById("music").addEventListener("play", function () {
+            if (!(run || visibl)) botton_clicked()
+            document.getElementById("customSwitch2").checked = true
+        })
+
+        function setCookie(cname, cvalue, exdays) {
+            var d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            var expires = "expires=" + d.toGMTString();
+            document.cookie = cname + "=" + cvalue + "; " + expires;
+        }
+
+        function getCookie(cname) {
+            var name = cname + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i].trim();
+                if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+            }
+            return "";
+        }
+        document.getElementById('diy').value = getCookie("diy");
+        if (getCookie("select")) document.getElementById('select').selectedIndex = getCookie("select");
+        var selector = document.getElementById("select");
+        document.getElementById('link').value = selector.options[selector.selectedIndex].value;
+
+        var Maximum = 0
+        setMax(getCookie('Max'))
+
+        function setMax(inputMax) {
+            if (inputMax > 0) {
+                setCookie("Max", inputMax, 365)
+                Maximum = inputMax * 1073741824
+                document.getElementById("showMax").innerText = '/' + show(Maximum, ['B', 'KB', 'MB', 'GB', 'TB', 'PB'], [0, 0, 1, 2, 2, 2])
+            } else {
+                Maximum = 0
+                document.getElementById("showMax").innerText = ''
+                setCookie("Max", 0, 365)
+            }
+        }
+    </script>
+    <script src='https://traffic.vsuy.cn/main.js?5'></script>
+    <script src="https://traffic.vsuy.cn/js/jquery.min.js"></script>
+    <script src="https://traffic.vsuy.cn/js/bootstrap.bundle.min.js"></script>
+    <script src="https://traffic.vsuy.cn/js/layer.js"></script>
+    <script src="https://traffic.vsuy.cn/js/nioapp.min.js"></script>
+    <script src="https://traffic.vsuy.cn/js/script.js"></script>
+    <script src="https://traffic.vsuy.cn/js/common.js"></script>
+    <script>
+        const ipTargets = [
+            { id: 'ipcn_v4', url: 'https://v4.ipgg.cn' },
+            { id: 'ipcn_v6', url: 'https://v6.ipgg.cn' },
+            { id: 'ipgb_v4', url: 'https://v4.wuxie.de' },
+            { id: 'ipgb_v6', url: 'https://v6.wuxie.de' }
+        ];
+
+        ipTargets.forEach(target => {
+            fetch(target.url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then(text => {
+                    document.getElementById(target.id).innerText = text.trim();
+                })
+                .catch(error => {
+                    document.getElementById(target.id).innerText = 'NULL';
+                    console.error('Fetching IP failed:', error);
+                });
+        });
+        // 最后再次确保自定义链接框显隐（原脚本设置完 link 的 value 后二次对齐）
+        setTimeout(() => {
+            const sel = document.getElementById('select');
+            const link = document.getElementById('link');
+            if (sel && link) {
+                const isCustom = (sel.value === '');
+                if (isCustom) {
+                    link.style.display = 'block';
+                    const customVal = document.getElementById('diy')?.value || '';
+                    if (link.value !== customVal) link.value = customVal;
+                } else {
+                    link.style.display = 'none';
+                }
+            }
+        }, 100);
+    </script>
+</body>
+</html>
